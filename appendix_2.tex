@@ -1,0 +1,84 @@
+\chapter{Input Files Used During Simulation}\label{app:input_files}
+\subsection*{Input File \emph{bla.i}}
+\begin{verbatim}
+# bla.i file
+# Spatial Blasius boundary layer with 4 passive scalars
+#
+20070716        Version of input file
+t18600.uu
+t19600.uu
+19600.           Maximum simulation time (tmax)
+500000000         Maximum iterations (maxit)
+500000000.        Maximum CPU time (cpumax)
+500000000.        Maximum wall-clock time (wallmax)
+.false.         Save intermediate files (write_inter)
+0.              Time step (dt)
+4               1/3/4 number of RK stages (nst)
+0.8             CFL number (cflmaxin)
+600.            Box length (xl)
+.false.          Variable size (varsiz)
+.0              Rotation rate (rot)
+.false.         Constant mass flux (cflux)
+0.              Re_tau (no effect for boundary layers)
+.false.         Perturbation mode (pert)
+110             Boundary condition number (ibc)
+.false.         Chebyshev integration method (cim)
+.false.         Galilei transformation (gall)
+.false.         Constant wall-suction (suction)
+.true.          Spatial simulation (spat)
+.false.         Tabulated free-stream velocity (tabfre)
+.false.         Read base flow from file (rbfl)
+1.              Fringe strength (fmax)
+-100.           Fringe start (fstart)
+0.              Fringe end (fend)
+60.             Fringe rise distance (frise)
+40.             Fringe fall distance (ffall)
+0.0             Amplitude oblique waves (ampob)
+0.0             Amplitude 2D TS waves (amp2d)
+.false.         Forcing with Orr-Sommerfeld modes (osmod)
+.false.         Forcing with streaks (streak)
+.false.         Forcing with waves (waves)
+.false.         Read sgs.i (sgs)
+0               SFD (isfd)
+0               MHD (imhd)
+0               Type of localized disturbance (loctyp)
+.true.          Volume forcing of trip (tripf)
+0.0             Steady forcing amplitude (tamps)
+0.4             Time-dependent forcing amplitude (tampt)
+4.0             x length scale of trip (txsc)
+5.              x origin of trip (tx0)
+2.0             y length scale of trip (tysc)
+80              Number of z modes in trip nzt)
+1.0             Time scale of trip (tdt)
+-1              Random number seed for trip (seed)
+4               Boundary condition at lower wall (wbci)
+0.857		Maximum amplitude(amp)
+250.0		Start position of wall oscillation (xstart)
+482.7		End position of wall oscillation (xend)
+10.0		Rise length of wall oscillation (xrise)
+10.0 		Fall length of wall oscillation (xfall)
+0.		Time start (tstart)
+20.0		Time end (tend)
+1.0		Time rise (trise)
+1.0 		Time fall (tfall)
+0.108		Position variation (xomeg)
+
+4               CFL calculation interval (icfl)
+0               Amplitude calculation interval (iamp)
+.false.         y-dependent statistics (longli)
+0               Extremum calculation interval (iext)
+40              xy-statistics calculation interval (ixys)
+xy18600-19600.stat
+500             xy-statistics saving interval (ixyss)
+2000.              Start time for statistics (txys)
+.false.          Two-point correlations (corrf)
+.false.          Time series (serf)
+2               Number of 3D fields to save (msave)
+18950.
+t18950.uu
+19300.
+t19300.uu
+0               Number of wavenumbers to save (mwave)
+0               Number of planes to save (npl)
+endstring
+\end{verbatim}

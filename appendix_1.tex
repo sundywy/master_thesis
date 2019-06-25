@@ -1,0 +1,316 @@
+\chapter{Changes in Program Bla}\label{app:bla_change}
+\section{Changes in Main Program Bla}
+\subsection*{Additional Variable Declaration}
+\begin{verbatim}
+c
+c     Blowing and suction and wall oscillation
+c
+      
+      real wlwr(nxp/2+1,nzd*iiwall),wlwi(nxp/2+1,nzd*iiwall)
+
+\end{verbatim}
+
+\subsection*{Additional Parameter List in Call to Subroutine \emph{cwallbc}}
+\begin{verbatim}
+    call cwallbc(wallvr,wallvi,walloscur,walloscui,walloscwr,
+     &        walloscwi,wp1,wp2,wpds1,wpds2,wpds3,wpds4,wpds5,        
+     &        wpds6,wpds7,wpds8,wpds9,wpds10,wpds11,wpds12,
+     &        wpdds1,wpdds2,prex,prez,pres,
+     &        wr,wi,xl,xsc,zl,zsc,tc,wbci,alfa,beta)
+\end{verbatim}
+
+\subsection*{Additional Parameter List in Call to Subroutine \emph{linearbl}}
+\begin{verbatim}
+call linearbl(ur,ui,puw,zb,an,bn,anp1,bnp1,re,pr,alfa,beta,
+     &        u0low,u0upp,w0low,w0upp,du0upp,px,ibc,cim,icorr,
+     &        bu1jr,bu1ji,prey,h3r(1,ip),h3i(1,ip),
+     &        hthr(1,ip),hthi(1,ip),pthr(1,ip),pthi(1,ip),
+     &        dthr(1,ip),dthi(1,ip),
+     &        u3r(1,ip),u3i(1,ip),om3r(1,ip),om3i(1,ip),
+     &        th3r(1,ip),th3i(1,ip),f(1,1,ip),
+     &        f(1,1,ip),f(1,2,ip),f(1,3,ip),f(1,4,ip),f(1,5,ip),
+     &        f(1,4,ip),f(1,5,ip),f(1,6,ip),f(1,7,ip),
+     &        bis(1,1,ip),bis(1,2,ip),
+     &        bis(1,3,ip),bis(1,4,ip),bis(1,2,ip),
+     &        bis(1,3,ip),bis(1,4,ip),bis(1,1,ip),bis(1,5,ip),
+     &        bis(1,6,ip),bis(1,7,ip),bis(1,8,ip),
+     &        domyr(1,ip),domyi(1,ip),domyh(1,ip),
+     &        omyh(1,ip),d2omyh(1,ip),
+     &        vr(1,ip),vi(1,ip),vh(1,ip),vh2(1,ip),
+     &        dvr(1,ip),dvi(1,ip),dvh(1,ip),dvh2(1,ip),d2v(1,1,ip),
+     &        d2v(1,2,ip),d2v(1,3,ip),d2v(1,4,ip),d2v(1,1,ip),
+     &        d2v(1,2,ip),d2v(1,3,ip),homyr(1,ip),homyi(1,ip),
+     &        hvr(1,ip),hvi(1,ip),q(1,ip),c(1,ip),d(1,ip),e(1,ip),
+     &        w3(1,ip),
+     &        wallvr,wallvi,wbci,
+     &        wallur,wallui,wallwr,wallwi,v_wall,wlvr,wlvi,
+     &        walloscur,walloscui,walloscwr,walloscwi,
+     &        iles,gur,gui,taur,taui,gu3r(1,ip),gu3i(1,ip),
+     &        ggu3r(1,ip),ggu3i(1,ip),
+     &        gewy1,gewy2,gewy12,gewy22,iord,
+     &        diags,diags2,gplane(1,ip),filtxz,filtxz2,
+     &        lpfxz,lpfxz2,zbp,ihighorder,cs,my_node,tbc,
+     &        dtheta0_upp,dtheta0_low,d2th_bc(1,ip),fth_bc(1,ip),
+     &        dth3r_bc(1,ip),dth3i_bc(1,ip),
+     &        dth3r_bc2(1,ip),dth3i_bc2(1,ip),theta0_low,theta0_upp,
+     &        cflux,mflux)
+\end{verbatim}
+\section{Changes in Subroutine \emph{cwallbc}}
+
+\subsection*{Additional Parameter List}
+\begin{verbatim}
+      subroutine cwallbc(wallvr,wallvi,walloscur,walloscui,
+     &     walloscwr,walloscwi,wp1,wp2,wpds1,wpds2,wpds3,wpds4,wpds5,
+     &     wpds6,wpds7,wpds8,wpds9,wpds10,wpds11,wpds12,wpdds1,wpdds2,
+     &     prex,prez,pres,wr,wi,xl,xsc,zl,zsc,tc,wbci,alfa,beta)
+
+\end{verbatim}
+
+\subsection*{Additional Variable Declaration}
+\begin{verbatim}
+      real walloscur(nxp/2+1,nzd),walloscui(nxp/2+1,nzd)
+      real walloscwr(nxp/2+1,nzd),walloscwi(nxp/2+1,nzd)
+      real alfa(nx/2*mbz),beta(nz)
+      real wlwr(nxp/2+1,nzd),wlwi(nxp/2+1,nzd)
+      real dnx,fstc,fenc,r
+      integer xstartc,xendc,xst,xen,imin,xendcc,i
+      real xc1(nxp/2),xc2(nxp/2),fring1(nxp/2),fring2(nxp/2)
+      parameter(r=0.499999999999999999999999)
+\end{verbatim}
+
+\subsection*{Generation of Spanwise Velocity Field at Wall}
+\begin{verbatim}
+      if (wbci.eq.4) then
+         amp=wp1
+         xstart=wpds1
+         xend=wpds2
+         xrise=wpds3
+         xfall=wpds4
+         tstart=wpds9
+         tend=wpds10       
+         trise=wpds11
+         tfall=wpds12
+         xomeg=wpdds1
+         
+         dnx = xl/real(nxp)
+         fstc = xstart + int((xsc-xstart)/xl+r)*xl
+         fenc = xend + int((xsc-xend)/xl+r)*xl
+         xstart = real((nxp/2)*(fstc-xsc+xl/2)/xl) + 1
+         xend = real((nxp/2)*(fenc-xsc+xl/2)/xl) + 1
+         
+         imin = 0
+         xendc = nxp/2
+         
+         do i = imin, 1
+            xst = int(xstart**i)
+            xen = max(int(xend), xendc**i)
+            do x = xst,xen
+               xc1(x) = real(2*x-1-nxp/2-1)*dnx + xsc
+               fring1(x) = step((xc1(x)-fstc)/xrise)-step((xc1(x)-
+     &              fenc)/xfall+1)
+               xc2(x) = xc1(x) + dnx
+               fring2(x) = step((xc2(x)-fstc)/xrise)-step((xc2(x)-
+     &              fenc)/xfall+1)
+               
+               if (xstart.ge.xend) then
+
+                  fring1(x) = fring1(x) + 1
+                  fring2(x) = fring2(x) + 1
+
+               end if
+            
+               do z=1,nzpc
+                  wlwr(x,z)=amp*fring1(x)*sin((xc1(x)-xstart)*xomeg)
+                  wlwi(x,z)=amp*fring2(x)*sin((xc2(x)-xstart)*xomeg)
+               end do
+            end do
+         end do
+      end if
+      
+c
+c     Real to half complex transform in x-direction first
+c
+      if (wbci.eq.3.or.wbci.eq.4) then
+         call vrfftf(wlwr,wlwi,wr,wi,nxp,nzpc,1,nxp/2+1,prex)
+      else
+         call vrfftf(wallvr,wallvi,wr,wi,nxp,nzpc,1,nxp/2+1,prex)
+      end if
+c
+c     Then complex transform in z direction
+c
+      if (wbci.eq.3.or.wbci.eq.4) then
+         if (nfzsym.eq.0) then
+            call vcfftf(wlwr,wlwi,wr,wi,nzp,nx/2,nxp/2+1,1,prez)
+         else
+            call vcffts(wlwr,wlwi,wr,nzst,nx/2,nxp/2+1,1,pres)
+         end if
+      else
+         if (nfzsym.eq.0) then
+            call vcfftf(wallvr,wallvi,wr,wi,nzp,nx/2,nxp/2+1,1,prez)
+         else
+            call vcffts(wallvr,wallvi,wr,nzst,nx/2,nxp/2+1,1,pres)
+         end if
+      end if
+
+c
+c     Normalize
+c
+      if (wbci.eq.3.or.wbci.eq.4) then
+         do x=1,nxp/2+1
+            do z=1,nz/2
+               wlwr(x,z)=wlwr(x,z)/(nxp*nzp)
+               wlwi(x,z)=wlwi(x,z)/(nxp*nzp)
+            end do
+         end do
+         if (nfzsym.eq.0) then
+            do x=1,nxp/2+1
+               do z=nz/2+1,nz
+                  wlwr(x,z)=wlwr(x,z+nzp-nz)/real(nxp*nzp)
+                  wlwi(x,z)=wlwi(x,z+nzp-nz)/real(nxp*nzp)
+              end do
+            end do
+         end if
+      else
+         do x=1,nxp/2+1
+            do z=1,nz/2
+               wallvr(x,z)=wallvr(x,z)/(nxp*nzp)
+               wallvi(x,z)=wallvi(x,z)/(nxp*nzp)
+            end do
+         end do
+         if (nfzsym.eq.0) then
+            do x=1,nxp/2+1
+               do z=nz/2+1,nz
+                  wallvr(x,z)=wallvr(x,z+nzp-nz)/real(nxp*nzp)
+                  wallvi(x,z)=wallvi(x,z+nzp-nz)/real(nxp*nzp)
+              end do
+            end do
+         end if
+      end if
+
+c
+c     For wcbi=3 or wbci=4   
+c
+      if (wbci.eq.3.or.wbci.eq.4) then
+        do z=1,nz
+c
+c        Re{Dv},Im{Dv},Re{eta} and Im{eta}
+c
+           do x=1,nx/2
+              walloscur(x,z)=beta(z)*wlwi(x,z)
+              walloscui(x,z)=-beta(z)*wlwr(x,z)
+              walloscwr(x,z)=alfa(x)*wlwi(x,z)
+              walloscwi(x,z)=-alfa(x)*wlwr(x,z)
+           end do
+        end do
+
+        walloscur(1,1)=0.0
+        walloscwr(1,1)=wlwr(1,1) 
+\end{verbatim}
+\section{Changes in Subroutine \emph{linearbl}}
+\subsection*{Additional Parameter List}
+\begin{verbatim}
+      subroutine linearbl(ur,ui,puw,zb,an,bn,anp1,bnp1,re,pr,alfa,beta,
+     &     u0low,u0upp,w0low,w0upp,du0upp,px,ibc,cim,icorr,
+     &     bu1jr,bu1ji,prey,h3r,h3i,hthr,hthi,pthr,pthi,dthr,dthi,
+     &     u3r,u3i,om3r,om3i,th3r,th3i,
+     &     f,fvr,fvi,fvh,fomyr,fomyi,pomyr,pomyi,fthr,fthi,
+     &     bis,d2phr,d2phi,d2phh,phr,phi,phh,phh2,d2omyr,d2omyi,
+     &     d2thr,d2thi,
+     &     domyr,domyi,domyh,omyh,d2omyh,
+     &     vr,vi,vh,vh2,dvr,dvi,dvh,dvh2,d2v,d2vr,d2vi,d2vh,d2vh2,
+     &     pvr,pvi,homyr,homyi,hvr,hvi,q,c,d,e,w3,
+     &     wallvr,wallvi,wbci,
+     &     wallur,wallui,wallwr,wallwi,v_wall,wlvr,wlvi,
+     &     walloscur,walloscui,walloscwr,walloscwi,
+     &     iles,gur,gui,taur,taui,gu3r,gu3i,
+     &     ggu3r,ggu3i,gewy1,gewy2,gewy12,gewy22,iord,
+     &     diags,diags2,gplane,filtxz,filtxz2,
+     &     lpfxz,lpfxz2,zbp,ihighorder,cs,my_node,tbc,
+     &     dtheta0_upp,dtheta0_low,d2th_bc,fth_bc,dth3r_bc,dth3i_bc,
+     &     dth3r_bc2,dth3i_bc2,theta0_low,theta0_upp,cflux,mflux)
+\end{verbatim}
+
+\subsection*{Additional Variable Declaration}
+\begin{verbatim}
+c
+c     Wall oscillation
+c
+      real walloscur(nxp/2+1,nzd),walloscui(nxp/2+1,nzd)
+      real walloscwr(nxp/2+1,nzd),walloscwi(nxp/2+1,nzd)
+\end{verbatim}
+
+\subsection*{Set Boundary Conditions on Odd/Even Points}
+\begin{verbatim}
+      if (wbci.eq.1 .or. wbci.eq.2 .or. wbci.eq.-2) then
+         do xz=1,nxz
+            pl=(xz-1)/(nx/2)
+            vbcr(xz,1)=0.5*wallvr(xz-pl*nx/2,zb+pl)
+            vbcr(xz,2)=-vbcr(xz,1)
+            vbci(xz,1)=0.5*wallvi(xz-pl*nx/2,zb+pl)
+            vbci(xz,2)=-vbci(xz,1)
+         end do
+      end if
+
+      if (wbci.eq.3 .or. wbci.eq.4) then
+         do xz=1,nxz
+            pl=(xz-1)/(nx/2)
+            dvbcr(xz,1)=0.5*walloscur(xz-pl*nx/2,zb+pl) 
+            dvbcr(xz,2)=-dvbcr(xz,1)
+            dvbci(xz,1)=0.5*walloscui(xz-pl*nx/2,zb+pl)
+            dvbci(xz,2)=-dvbci(xz,1)
+
+            omybcr(xz,1)=0.5*walloscwr(xz-pl*nx/2,zb+pl)
+            omybcr(xz,2)=-omybcr(xz,1)
+            omybci(xz,1)=0.5*walloscwi(xz-pl*nx/2,zb+pl)
+            omybci(xz,2)=-omybci(xz,1)
+         end do
+      end if
+\end{verbatim}
+
+\subsection*{Set Boundary Conditions for Wavenumber Zero}
+\begin{verbatim}
+        if ((wbci .eq. 4) .and. (my_node .eq. 0)) then
+            bc0(1,1)=.5*(u0upp+walloscur(1,1))
+            bc0(2,1)=.5*(u0upp-walloscur(1,1))
+            bc0(1,2)=.5*(w0upp+walloscwr(1,1))
+            bc0(2,2)=.5*(w0upp-walloscwr(1,1))
+         end if
+\end{verbatim}
+\section{Changes in Subroutine \emph{rparambl}}
+\begin{verbatim}
+         if (wbci.eq.4) then
+         call comment(10)
+         read(10,*) wp1
+         call comment(10)
+         read(10,*) wpds1
+         call comment(10)
+         read(10,*) wpds2
+         call comment(10)
+         read(10,*) wpds3
+         call comment(10)
+         read(10,*) wpds4
+         call comment(10)
+         read(10,*) wpds9
+         call comment(10)
+         read(10,*) wpds10
+         call comment(10)
+         read(10,*) wpds11
+         call comment(10)
+         read(10,*) wpds12
+         call comment(10)
+         read(10,*) wpdds1
+
+         if (my_node.eq.0) then
+            write(*,*) '   amp     ',wp1
+            write(*,*) '   xstart      ',wpds1
+            write(*,*) '   xend        ',wpds2
+            write(*,*) '   xrise       ',wpds3
+            write(*,*) '   xfall       ',wpds4
+            write(*,*) '   tstart      ',wpds9
+            write(*,*) '   tend        ',wpds10
+            write(*,*) '   trise       ',wpds11
+            write(*,*) '   tfall       ',wpds12
+            write(*,*) '   xomeg   ',wpdds1
+         end if
+      end if
+\end{verbatim}
